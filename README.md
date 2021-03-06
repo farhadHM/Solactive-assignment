@@ -43,5 +43,6 @@ better documentation and using swagger
 using TLS1.2 for secure communication
 config spring security and adding oauth2 for calling stateless services 
 using Behavior driven design (BDD)   
+idempotent in save new tick API
 ```
 * It was a great pleasure for me to solve this challenge
