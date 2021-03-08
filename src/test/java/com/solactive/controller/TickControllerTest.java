@@ -39,10 +39,6 @@ public class TickControllerTest {
     @MockBean
     private TickService tickService;
 
-    @BeforeEach
-    public void setup() {
-    }
-
     @Test
     @DisplayName("Test if tick added successfully")
     public void testCreateTick() {

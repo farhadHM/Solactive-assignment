@@ -30,6 +30,8 @@ please run it with maven Spring Boot plugin
 
 * development assumptions 
 ```
+the count of instruments would be constant
+input timestamp is in order
 The whole application pipeline (from getting request to sending response) should support concurrency
 the statistics related API return double with a whole decimal part 
 ```

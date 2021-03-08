@@ -56,8 +56,7 @@ public class TickController {
         LOGGER.info("start to Adding new tick with instrument:{} if is not expired", tick.getInstrument());
         Mono<Tick> result = tickService.saveTick(tick);
 
-        return result.doOnEach(System.out::println)
-                .map(e -> ResponseEntity.status(HttpStatus.CREATED).body(null)).cast(ResponseEntity.class)
+        return result.map(e -> ResponseEntity.status(HttpStatus.CREATED).body(null)).cast(ResponseEntity.class)
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).body(null));
     }
 

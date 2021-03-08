@@ -1,8 +1,8 @@
 package com.solactive.service;
 
+import com.solactive.model.InstrumentTicksStatistics;
 import com.solactive.model.Tick;
 import com.solactive.model.TickStatistics;
-import com.solactive.repository.StatisticsHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * created by farhad (farhad.yousefi@outlook.com) on 3/5/2021 AD
@@ -20,30 +21,44 @@ import java.time.ZonedDateTime;
 public class TickServiceImpl implements TickService {
     private static final Logger LOGGER = LogManager.getLogger(TickServiceImpl.class);
 
-    private static final long BASE_TIME = 60000;
+    private static final long BASE_TIME = 990000;
+    private ConcurrentHashMap<String, InstrumentTicksStatistics> map = new ConcurrentHashMap<>();
 
     @Autowired
-    private StatisticsHandler statisticsHandler;
+    private TickStatisticsHandler tickHandler;
 
     @Override
     public Mono<Tick> saveTick(Tick tick) {
         LOGGER.info("Saving new tick with instrument if is not expired:{}", tick.getInstrument());
-        Long nowInSecond = ZonedDateTime.now().toInstant().toEpochMilli();
+        Long now = ZonedDateTime.now().toInstant().toEpochMilli();
 
-        if (nowInSecond - tick.getTimestamp() > BASE_TIME)
+        if (now - tick.getTimestamp() > BASE_TIME)
             return Mono.empty();
 
-        statisticsHandler.storeTick(tick);
+        if (map.containsKey(tick.getInstrument())) {
+            map.replace(tick.getInstrument(), tickHandler.storeTick(map.get(tick.getInstrument()), tick));
+        } else {
+            map.put(tick.getInstrument(), tickHandler.storeTick(new InstrumentTicksStatistics(), tick));
+        }
         return Mono.just(tick);
     }
 
     @Override
     public Mono<TickStatistics> getLatestMinStatisticsOfAllTicks() {
-        return statisticsHandler.getLatestMinStatisticsOfAllTicks(BASE_TIME);
+        TickStatistics result = new TickStatistics(0, Double.MAX_VALUE, Double.MIN_VALUE, 0);
+        map.entrySet().stream().forEach((e) -> {
+            TickStatistics ts = tickHandler.getStatistics(map.get(e.getKey()), BASE_TIME);
+            result.setMin(ts.getMin() < result.getMin() ? ts.getMin() : result.getMin());
+            result.setMax(ts.getMax() > result.getMax() ? ts.getMax() : result.getMax());
+            result.setAvg((ts.getAvg() + result.getAvg()) / 2);
+            result.setCount(ts.getCount() + result.getCount());
+
+        });
+        return Mono.just(result);
     }
 
     @Override
     public Mono<TickStatistics> getLatestMinStatisticsOfInstrument(String instrument) {
-        return statisticsHandler.getLatestMinStatisticsOfInstrument(BASE_TIME, instrument);
+        return Mono.just(tickHandler.getStatistics(map.get(instrument), BASE_TIME));
     }
 }

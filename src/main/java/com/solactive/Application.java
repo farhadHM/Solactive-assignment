@@ -15,6 +15,6 @@ import java.time.ZonedDateTime;
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
-        System.out.println("current time:"+ ZonedDateTime.now().toInstant().toEpochMilli());
+        System.out.println("current time:" + ZonedDateTime.now().toInstant().toEpochMilli());
     }
 }
