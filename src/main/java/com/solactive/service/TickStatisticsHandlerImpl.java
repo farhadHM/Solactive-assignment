@@ -62,6 +62,8 @@ public class TickStatisticsHandlerImpl implements TickStatisticsHandler {
         addTick(tick, instrumentTicksStatistics);
         instrumentTicksStatistics.getAllTicks().add(tick);
         instrumentTicksStatistics.getStatistics().updateStatistics(tick);
+        long avg = Math.round(instrumentTicksStatistics.getStatistics().getAvg());
+        instrumentTicksStatistics.getStatistics().setAvg((double) avg);
         return instrumentTicksStatistics;
     }
 

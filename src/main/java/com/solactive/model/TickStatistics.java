@@ -74,5 +74,13 @@ public class TickStatistics {
         refreshAvg(tick.getPrice());
     }
 
-
+    @Override
+    public String toString() {
+        return "TickStatistics{" +
+                "avg=" + avg +
+                ", min=" + min +
+                ", max=" + max +
+                ", count=" + count +
+                '}';
+    }
 }
